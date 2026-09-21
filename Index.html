@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>دانشمند کوچک — عملیات نجات آزمایشگاه</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#081225; --panel:#101d36; --panel2:#152541; --cyan:#42e8ff;
+  --green:#55f5a5; --purple:#9b7bff; --gold:#ffd34e; --red:#ff5364;
+  --white:#f7fbff; --muted:#a8b8d2; --line:rgba(151,190,255,.18);
+  --shadow:0 20px 60px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:"Vazirmatn",Tahoma,sans-serif;background:#050c19;color:var(--white)}
+body{overflow-x:hidden}
+button{font-family:inherit}
+.hidden{display:none!important}
+.app{width:min(1100px,100%);margin:auto;padding:14px}
+.screen{display:none;animation:fadeIn .4s ease both}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+/* صفحه شروع */
+.start-card,.result-card{
+  position:relative;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(145deg,rgba(19,36,66,.97),rgba(8,20,39,.97));
+  border-radius:30px;box-shadow:var(--shadow);padding:clamp(25px,5vw,55px);
+}
+.start-card{text-align:center;min-height:calc(100vh - 28px);display:flex;flex-direction:column;justify-content:center}
+.grid-glow{position:absolute;inset:0;opacity:.18;background-image:linear-gradient(rgba(66,232,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(66,232,255,.08) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent)}
+.lab-title{position:relative;font-size:clamp(28px,6vw,58px);font-weight:900;line-height:1.35;color:var(--cyan);text-shadow:0 0 28px rgba(66,232,255,.25);margin:12px 0}
+.lab-title span{color:var(--gold)}
+.subtitle{position:relative;color:var(--muted);line-height:2;font-size:clamp(13px,2vw,17px);max-width:720px;margin:0 auto 18px}
+.mission{position:relative;max-width:700px;margin:15px auto;padding:15px 18px;border:1px solid rgba(85,245,165,.2);background:rgba(85,245,165,.06);border-radius:18px;line-height:2;color:#cfe4e4}
+.start-actions{position:relative;margin:20px 0}
+.main-btn{border:0;cursor:pointer;color:#04111f;font-weight:900;font-size:16px;padding:15px 30px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 0 28px rgba(66,232,255,.22);transition:.2s}
+.main-btn:hover{transform:translateY(-3px);filter:brightness(1.06)}
+.secondary-btn{border:1px solid var(--line);cursor:pointer;color:var(--white);background:#162744;padding:12px 20px;border-radius:14px;font-weight:800}
+.controls{position:relative;color:var(--muted);font-size:12px;line-height:2}
+.scientist{position:relative;width:150px;height:190px;margin:0 auto 6px;animation:float 2.8s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-9px)}}
+.head{position:absolute;width:86px;height:86px;left:32px;top:20px;background:#ffd2ad;border-radius:45% 45% 48% 48%;border:4px solid #0b1629}
+.hair{position:absolute;top:5px;left:23px;width:104px;height:45px}
+.hair i{position:absolute;width:27px;height:27px;background:#3b2c28;border-radius:50%}
+.hair i:nth-child(1){left:0;top:9px}.hair i:nth-child(2){left:19px;top:0}.hair i:nth-child(3){left:42px;top:8px}.hair i:nth-child(4){left:65px;top:1px}.hair i:nth-child(5){left:82px;top:13px}
+.glasses{position:absolute;top:50px;left:43px;width:64px;height:25px}
+.glasses:before,.glasses:after{content:"";position:absolute;width:25px;height:18px;border:3px solid #23304a;border-radius:8px;background:rgba(90,220,255,.18)}
+.glasses:before{left:0}.glasses:after{right:0}.glasses{border-top:3px solid #23304a}
+.body{position:absolute;left:26px;top:96px;width:98px;height:82px;background:#f7fbff;border-radius:28px 28px 18px 18px;border:4px solid #16243b}
+.pocket{position:absolute;left:13px;top:32px;width:27px;height:24px;border:3px solid #b7c9db;border-radius:5px}
+.arm{position:absolute;width:52px;height:20px;background:#f7fbff;border:4px solid #16243b;border-radius:15px;top:116px}
+.arm.left{left:3px;transform:rotate(18deg)}.arm.right{right:3px;transform:rotate(-18deg)}
+.beaker{position:absolute;right:0;top:103px;font-size:38px;filter:drop-shadow(0 0 7px rgba(66,232,255,.6))}
+/* HUD و بازی */
+.game-shell{border:1px solid var(--line);background:#081426;border-radius:25px;box-shadow:var(--shadow);overflow:hidden}
+.hud{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px;padding:12px;background:rgba(12,27,50,.98);border-bottom:1px solid var(--line)}
+.hud-box{background:#12223d;border:1px solid var(--line);border-radius:14px;padding:9px 10px;text-align:center}
+.hud-label{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}.hud-value{font-size:16px;font-weight:900}
+.hearts{letter-spacing:2px}.level{color:var(--gold)}.score{color:var(--green)}
+.canvas-wrap{position:relative;background:#071225}
+#gameCanvas{display:block;width:100%;height:auto;touch-action:none;cursor:grab}
+#gameCanvas:active{cursor:grabbing}
+.pause-btn{position:absolute;left:12px;top:12px;border:1px solid var(--line);background:rgba(8,18,37,.82);color:#fff;border-radius:12px;padding:9px 12px;cursor:pointer;font-weight:800}
+.bottom-progress{padding:10px 14px;background:#0b1830}
+.progress-line{height:11px;background:#1b2c49;border-radius:99px;overflow:hidden}
+#levelProgress{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--green));transition:width .2s}
+/* مودال‌ها */
+.overlay{position:fixed;inset:0;background:rgba(2,7,17,.78);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;z-index:30}
+.modal{width:min(680px,100%);max-height:92vh;overflow:auto;background:linear-gradient(145deg,#142746,#0a172c);border:1px solid var(--line);border-radius:25px;box-shadow:0 30px 90px rgba(0,0,0,.55);padding:24px;animation:modalIn .35s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:none}}
+.modal h2{text-align:center;color:var(--cyan);margin:0 0 8px;font-size:25px}
+.modal-sub{text-align:center;color:var(--muted);font-size:12px;line-height:1.8;margin-bottom:18px}
+.riddle-timer{height:10px;background:#243654;border-radius:99px;overflow:hidden;margin-bottom:9px}.riddle-timebar{height:100%;width:100%;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .1s}
+#riddleTimer{text-align:center;color:var(--gold);font-weight:900;margin-bottom:12px}
+.riddle-question{font-size:18px;line-height:1.9;font-weight:800;margin-bottom:14px}
+.riddle-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.riddle-option{border:1px solid var(--line);background:#10213c;color:#dce9fb;text-align:right;padding:13px;border-radius:14px;cursor:pointer;line-height:1.8;transition:.18s}
+.riddle-option:hover{background:#193053;border-color:rgba(66,232,255,.5);transform:translateY(-2px)}
+.riddle-option.correct{background:rgba(85,245,165,.12);border-color:var(--green);color:#aaffd2}
+.riddle-option.wrong{background:rgba(255,83,100,.12);border-color:var(--red);color:#ffb1ba}
+.riddle-explain{display:none;margin-top:14px;padding:13px;border-radius:14px;background:#0c1b31;color:#b9cbe3;line-height:1.9;font-size:12px}.riddle-explain.show{display:block}
+.riddle-next{display:none;width:100%;margin-top:10px}.riddle-next.show{display:block}
+.pause-modal{text-align:center}.pause-modal p{color:var(--muted);line-height:2}
+/* نتیجه */
+.result-card{text-align:center}
+.result-icon{font-size:65px;animation:float 2s ease-in-out infinite}
+.result-card h2{font-size:32px;color:var(--cyan);margin:7px 0}
+.result-message{color:var(--muted);line-height:2;margin:0 auto 22px;max-width:650px}
+.final-score{font-size:52px;color:var(--green);font-weight:900;text-shadow:0 0 25px rgba(85,245,165,.2)}
+.final-score small{display:block;font-size:12px;color:var(--muted)}
+.result-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:20px 0}
+.result-stat{padding:13px 7px;background:#10213b;border:1px solid var(--line);border-radius:15px}
+.result-stat strong{display:block;font-size:21px}.result-stat span{font-size:10px;color:var(--muted)}
+.result-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+/* لرزش */
+.shake{animation:shake .42s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-7px)}80%{transform:translateX(5px)}}
+/* پیام شناور */
+.float-msg{position:fixed;z-index:50;left:50%;top:38%;transform:translate(-50%,-50%);font-size:24px;font-weight:900;pointer-events:none;animation:floatMsg .9s ease forwards;text-shadow:0 0 14px currentColor}
+@keyframes floatMsg{0%{opacity:0;transform:translate(-50%,-20%) scale(.7)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-120%) scale(1)}}
+@media(max-width:650px){
+ .app{padding:7px}.start-card{min-height:calc(100vh - 14px);border-radius:22px;padding:22px 14px}
+ .hud{grid-template-columns:1fr 1fr 1fr;padding:8px}.hud-box{padding:7px 3px}.hud-label{font-size:8px}.hud-value{font-size:13px}
+ .riddle-options{grid-template-columns:1fr}.modal{padding:18px;border-radius:20px}
+ .result-stats{grid-template-columns:1fr 1fr}.result-card{padding:25px 15px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- صفحه شروع -->
+  <section id="startScreen" class="screen active">
+    <div class="start-card">
+      <div class="grid-glow"></div>
+      <div class="scientist" aria-label="دانشمند کوچک">
+        <div class="hair"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="head"><div class="glasses"></div></div>
+        <div class="body"><div class="pocket"></div></div>
+        <div class="arm left"></div><div class="arm right"></div>
+        <div class="beaker">🧪</div>
+      </div>
+      <div style="position:relative;font-size:14px;color:var(--muted)">🔬 مأموریت ویژه آزمایشگاه پروفسور دانش‌زاده</div>
+      <h1 class="lab-title">دانشمند کوچک<br><span>عملیات نجات آزمایشگاه</span></h1>
+      <p class="subtitle">وسایل علمی در حال سقوط‌اند! وسایل مفید را با سبدت جمع کن، از مواد خطرناک دوری کن و هر وقت پروفسور معما داد، با دانش علمی خود آزمایشگاه را نجات بده.</p>
+      <div class="mission"><b style="color:var(--green)">🎯 مأموریت:</b> وسیله‌های مفید = +۱۰ امتیاز، خطرناک = از دست دادن یک جان، ستاره طلایی = سپر کوتاه‌مدت. هرچه جلوتر بروی، سرعت بیشتر می‌شود!</div>
+      <div class="start-actions"><button id="startBtn" class="main-btn">🚀 شروع عملیات</button></div>
+      <div class="controls">💻 رایانه: کلیدهای ← و → &nbsp; | &nbsp; 📱 موبایل: انگشتت را روی بازی بکش و دانشمند را حرکت بده</div>
+    </div>
+  </section>
+
+  <!-- صفحه بازی -->
+  <section id="gameScreen" class="screen">
+    <div class="game-shell">
+      <div class="hud">
+        <div class="hud-box"><span class="hud-label">جان‌ها</span><div id="hearts" class="hud-value hearts">❤️❤️❤️</div></div>
+        <div class="hud-box"><span class="hud-label">امتیاز</span><div class="hud-value score" id="score">۰</div></div>
+        <div class="hud-box"><span class="hud-label">سطح</span><div class="hud-value level" id="level">۱</div></div>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="gameCanvas" width="900" height="620"></canvas>
+        <button id="pauseBtn" class="pause-btn">⏸ توقف</button>
+      </div>
+      <div class="bottom-progress">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px">
+          <span>پیشرفت عملیات</span><span id="progressText">۰٪</span>
+        </div>
+        <div class="progress-line"><div id="levelProgress"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- معمای پروفسور -->
+  <div id="riddleOverlay" class="overlay hidden">
+    <div class="modal">
+      <h2>🧠 معمای پروفسور دانش‌زاده</h2>
+      <div class="modal-sub">برای ادامه عملیات، این مأموریت علمی را حل کن!</div>
+      <div class="riddle-timer"><div id="riddleTimebar" class="riddle-timebar"></div></div>
+      <div id="riddleTimer">۲۰ ثانیه</div>
+      <div id="riddleQuestion" class="riddle-question"></div>
+      <div id="riddleOptions" class="riddle-options"></div>
+      <div id="riddleExplain" class="riddle-explain"></div>
+      <button id="riddleNext" class="main-btn riddle-next">ادامه عملیات ⚡</button>
+    </div>
+  </div>
+
+  <!-- توقف -->
+  <div id="pauseOverlay" class="overlay hidden">
+    <div class="modal pause-modal">
+      <h2>⏸ عملیات متوقف شد</h2>
+      <p>فعلاً همه‌چیز در آزمایشگاه ثابت مانده است. هر وقت آماده بودی ادامه بده!</p>
+      <button id="resumeBtn" class="main-btn">▶ ادامه عملیات</button>
+      <button id="exitBtn" class="secondary-btn" style="margin-top:10px">🚪 خروج به صفحه اصلی</button>
+    </div>
+  </div>
+
+  <!-- پایان -->
+  <section id="resultScreen" class="screen">
+    <div class="result-card">
+      <div class="result-icon" id="resultIcon">🏆</div>
+      <h2>آزمایشگاه نجات پیدا کرد!</h2>
+      <p class="result-message" id="resultMessage"></p>
+      <div class="final-score" id="finalScore">۰<small>امتیاز نهایی</small></div>
+      <div class="result-stats">
+        <div class="result-stat"><strong id="finalLevel">۱</strong><span>سطح رسیدشده</span></div>
+        <div class="result-stat"><strong id="riddleCorrect">۰</strong><span>معمای درست</span></div>
+        <div class="result-stat"><strong id="riddleWrong">۰</strong><span>معمای غلط</span></div>
+        <div class="result-stat"><strong id="bestScore">۰</strong><span>بهترین امتیاز</span></div>
+      </div>
+      <div class="result-actions">
+        <button id="restartBtn" class="main-btn">🔄 شروع مجدد</button>
+        <button id="homeBtn" class="secondary-btn">🏠 صفحه اصلی</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   سؤالات معما — معلم می‌تواند این آرایه را به‌سادگی ویرایش کند.
+   correctIndex: شماره گزینه درست از ۰ تا ۳
+============================================================ */
+const questions = [
+  {text:"ترتیب مناسب مراحل کاوشگری علمی کدام است؟",options:["مشاهده ← پرسش ← فرضیه ← آزمایش ← نتیجه‌گیری","آزمایش ← مشاهده ← بازی ← نتیجه‌گیری ← پرسش","فرضیه ← نتیجه‌گیری ← مشاهده ← آزمایش ← پرسش","پرسش ← نتیجه‌گیری ← بازی ← آزمایش ← مشاهده"],correctIndex:0,explanation:"در کاوشگری، معمولاً با مشاهده شروع می‌کنیم، پرسش می‌سازیم، فرضیه می‌دهیم، آزمایش می‌کنیم و سپس نتیجه‌گیری می‌کنیم."},
+  {text:"فرضیه چیست؟",options:["یک جواب قطعی و تغییرناپذیر","یک حدس علمی که باید با آزمایش بررسی شود","یک داستان علمی","فهرست وسایل آزمایشگاه"],correctIndex:1,explanation:"فرضیه یک حدس علمی و قابل آزمایش است؛ نتیجه آزمایش نشان می‌دهد شواهد از آن پشتیبانی می‌کنند یا نه."},
+  {text:"در آزمایش فرفره، برای بررسی اثر شکل بال، چه چیزی را تغییر می‌دهیم؟",options:["پهنای بال فرفره","رنگ کاغذ","تعداد دانش‌آموزان","رنگ کف کلاس"],correctIndex:0,explanation:"در این بررسی، پهنای بال فرفره متغیر مورد آزمایش است."},
+  {text:"در آزمایش فرفره، چه چیزی را اندازه می‌گیریم؟",options:["رنگ فرفره","تعداد پره‌های پنکه","زمان رسیدن فرفره به زمین","قد دانش‌آموز"],correctIndex:2,explanation:"زمان پایین آمدن فرفره تا رسیدن به زمین را اندازه می‌گیریم."},
+  {text:"برای عادلانه بودن آزمایش فرفره، کدام موارد را نباید تغییر دهیم؟",options:["طول دم، جنس کاغذ و طول بال","فقط پهنای بال","فقط رنگ فرفره","هر چیزی که بخواهیم"],correctIndex:0,explanation:"عوامل دیگر باید ثابت بمانند تا اثر پهنای بال را درست مقایسه کنیم."},
+  {text:"چرا بهتر است هر آزمایش را ۳ بار تکرار کنیم؟",options:["برای طولانی شدن آزمایش","برای دقیق‌تر و قابل اعتمادتر شدن نتیجه","برای مصرف بیشتر کاغذ","برای تغییر نتیجه"],correctIndex:1,explanation:"تکرار آزمایش کمک می‌کند خطاهای اتفاقی کمتر اثر بگذارند و نتیجه قابل اعتمادتر شود."},
+  {text:"نتیجه آزمایش فرفره در این بررسی چیست؟",options:["فرفره با بال پهن‌تر دیرتر به زمین می‌رسد","فرفره با بال پهن‌تر همیشه سریع‌تر می‌رسد","پهنای بال هیچ اثری ندارد","همه فرفره‌ها دقیقاً هم‌زمان می‌رسند"],correctIndex:0,explanation:"با ثابت نگه داشتن عوامل دیگر، فرفره با بال پهن‌تر معمولاً دیرتر به زمین می‌رسد."},
+  {text:"برای مشاهده اجسام ریز از چه وسیله‌ای استفاده می‌کنیم؟",options:["ترازو","ذره‌بین","دماسنج","خط‌کش"],correctIndex:1,explanation:"ذره‌بین به ما کمک می‌کند اجسام ریز را بزرگ‌تر ببینیم و دقیق‌تر مشاهده کنیم."},
+  {text:"تفاوت حدس معمولی با فرضیه علمی چیست؟",options:["هیچ تفاوتی ندارند","فرضیه علمی باید قابل بررسی و آزمایش باشد","حدس معمولی همیشه درست است","فرضیه علمی را نباید آزمایش کرد"],correctIndex:1,explanation:"فرضیه علمی باید طوری بیان شود که بتوان آن را با مشاهده یا آزمایش بررسی کرد."},
+  {text:"وقتی نتیجه آزمایش با فرضیه ما یکی نبود، چه باید کرد؟",options:["نتیجه را پاک کنیم","نتیجه را نادیده بگیریم","شواهد را بررسی و در صورت نیاز فرضیه را اصلاح یا رد کنیم","آزمایش را پنهان کنیم"],correctIndex:2,explanation:"دانشمند نتیجه واقعی را می‌پذیرد و بر اساس شواهد، فرضیه را اصلاح یا کنار می‌گذارد."},
+  {text:"مراحل یک آزمایش علمی را چگونه بهتر انجام می‌دهیم؟",options:["طرح‌ریزی، اجرای آزمایش، مشاهده و اندازه‌گیری، ثبت داده‌ها و نتیجه‌گیری","فقط حدس زدن","فقط نتیجه‌گیری","فقط جمع کردن وسایل"],correctIndex:0,explanation:"یک آزمایش خوب با طرح‌ریزی و کنترل عوامل آغاز می‌شود و داده‌ها ثبت و در پایان بررسی می‌شوند."},
+  {text:"کار دانشمندان از نظر پیدا کردن شواهد و کشف علت‌ها، شبیه کار چه کسی است؟",options:["کارآگاه","نقاش","ورزشکار","آشپز"],correctIndex:0,explanation:"دانشمند و کارآگاه هر دو با مشاهده، پرسش، جمع‌آوری شواهد و بررسی آن‌ها به دنبال پاسخ هستند."}
+];
+
+/* ============================================================
+   تنظیمات بازی
+============================================================ */
+const CONFIG = {
+  useful:["🔬","🧪","📊","📝","⚗️","🔍"],
+  dangerous:["💥","☠️","🔥"],
+  golden:"⭐",
+  usefulChance:.70,
+  dangerChance:.25,
+  goldenChance:.05,
+  baseFallSpeed:145,
+  spawnEvery:720,
+  riddleEveryMs:45000,
+  riddleEveryScore:100,
+  riddleTime:20,
+  maxLives:3
+};
+
+const $ = id => document.getElementById(id);
+const canvas=$("gameCanvas"), ctx=canvas.getContext("2d");
+const canvasWrap=$("canvasWrap");
+let W=canvas.width,H=canvas.height;
+let running=false,paused=false,riddleOpen=false,gameOver=false;
+let lastTime=0,spawnTimer=0,elapsed=0;
+let score=0,lives=3,level=1;
+let nextRiddleTime=CONFIG.riddleEveryMs,nextRiddleScore=CONFIG.riddleEveryScore;
+let riddleIndex=0,riddleTimer=null,riddleRemaining=CONFIG.riddleTime;
+let riddleCorrect=0,riddleWrong=0;
+let objects=[],particles=[];
+let keys={left:false,right:false};
+let touchActive=false;
+let player={x:W/2,y:H-72,w:104,h:58,targetX:W/2,speed:520,shieldUntil:0};
+
+/* تبدیل اعداد */
+function fa(n){return String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d])}
+
+/* صفحه‌ها */
+function showScreen(id){
+  ["startScreen","gameScreen","resultScreen"].forEach(x=>$(x).classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+/* صدای بازی با Web Audio API */
+function beep(type){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    const a=new AC(),o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+    if(type==="good"){o.type="sine";o.frequency.setValueAtTime(560,t);o.frequency.exponentialRampToValueAtTime(980,t+.18);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.16,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.3)}
+    else if(type==="bad"){o.type="sawtooth";o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(75,t+.25);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.13,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.3)}
+    else if(type==="riddleGood"){o.type="triangle";o.frequency.setValueAtTime(440,t);o.frequency.setValueAtTime(660,t+.11);o.frequency.setValueAtTime(880,t+.22);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.15,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.38)}
+    else if(type==="riddleBad"){o.type="triangle";o.frequency.setValueAtTime(260,t);o.frequency.exponentialRampToValueAtTime(120,t+.3);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.12,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.35)}
+    else {o.type="square";o.frequency.setValueAtTime(300,t);o.frequency.exponentialRampToValueAtTime(80,t+.7);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.12,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.75)}
+    o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.8);
+  }catch(e){}
+}
+
+/* ذرات */
+function burst(x,y,color){
+  for(let i=0;i<20;i++){
+    const a=Math.random()*Math.PI*2,s=70+Math.random()*210;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.55+Math.random()*.45,max:.9,color});
+  }
+}
+
+/* پیام شناور */
+function floatMessage(text,color){
+  const e=document.createElement("div");e.className="float-msg";e.style.color=color;e.textContent=text;document.body.appendChild(e);
+  setTimeout(()=>e.remove(),900);
+}
+
+/* شروع */
+$("startBtn").onclick=()=>{
+  resetGame();showScreen("gameScreen");running=true;paused=false;riddleOpen=false;lastTime=performance.now();requestAnimationFrame(loop);
+};
+
+/* ریست */
+function resetGame(){
+  running=false;paused=false;riddleOpen=false;gameOver=false;
+  score=0;lives=3;level=1;elapsed=0;spawnTimer=0;
+  nextRiddleTime=CONFIG.riddleEveryMs;nextRiddleScore=CONFIG.riddleEveryScore;
+  riddleCorrect=0;riddleWrong=0;objects=[];particles=[];
+  player.x=W/2;player.targetX=W/2;player.shieldUntil=0;
+  updateHUD();
+}
+
+/* اندازه بوم */
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  W=canvas.width;H=canvas.height;
+}
+window.addEventListener("resize",resizeCanvas);
+
+/* کلیدها */
+window.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft"){keys.left=true;e.preventDefault()}
+  if(e.key==="ArrowRight"){keys.right=true;e.preventDefault()}
+  if(e.key===" " && running && !riddleOpen){e.preventDefault();togglePause()}
+});
+window.addEventListener("keyup",e=>{
+  if(e.key==="ArrowLeft")keys.left=false;
+  if(e.key==="ArrowRight")keys.right=false;
+});
+
+/* کنترل لمسی: کشیدن انگشت چپ و راست */
+function touchToCanvasX(e){
+  const t=e.touches[0],r=canvas.getBoundingClientRect();
+  return (t.clientX-r.left)*(canvas.width/r.width);
+}
+canvas.addEventListener("touchstart",e=>{
+  touchActive=true;player.targetX=touchToCanvasX(e);e.preventDefault();
+},{passive:false});
+canvas.addEventListener("touchmove",e=>{
+  if(touchActive){player.targetX=touchToCanvasX(e);e.preventDefault()}
+},{passive:false});
+canvas.addEventListener("touchend",()=>touchActive=false);
+
+/* Pause */
+$("pauseBtn").onclick=togglePause;
+function togglePause(){
+  if(!running||riddleOpen||gameOver)return;
+  paused=!paused;$("pauseOverlay").classList.toggle("hidden",!paused);
+  if(!paused){lastTime=performance.now();requestAnimationFrame(loop)}
+}
+$("resumeBtn").onclick=()=>{paused=false;$("pauseOverlay").classList.add("hidden");lastTime=performance.now();requestAnimationFrame(loop)};
+$("exitBtn").onclick=()=>{paused=false;running=false;$("pauseOverlay").classList.add("hidden");showScreen("startScreen")};
+
+/* ایجاد شیء */
+function spawnObject(){
+  const roll=Math.random();
+  let type,kind;
+  if(roll<CONFIG.usefulChance){kind="useful";type=CONFIG.useful[Math.floor(Math.random()*CONFIG.useful.length)]}
+  else if(roll<CONFIG.usefulChance+CONFIG.dangerChance){kind="danger";type=CONFIG.dangerous[Math.floor(Math.random()*CONFIG.dangerous.length)]}
+  else{kind="golden";type=CONFIG.golden}
+  const size=38+Math.random()*10;
+  objects.push({
+    x:30+Math.random()*(W-60),y:-50,size,type,kind,
+    speed:CONFIG.baseFallSpeed+level*23+Math.random()*65,
+    angle:Math.random()*Math.PI*2,spin:(Math.random()-.5)*3
+  });
+}
+
+/* برخورد */
+function hit(a,b){
+  return Math.abs(a.x-b.x)<(a.w/2+b.size*.35) && Math.abs(a.y-b.y)<(a.h/2+b.size*.35);
+}
+
+/* گرفتن شیء */
+function collect(o){
+  if(o.kind==="useful"){
+    score+=10;burst(o.x,o.y,"#55f5a5");beep("good");floatMessage("+۱۰ 🔬","#55f5a5");
+  }else if(o.kind==="danger"){
+    if(performance.now()<player.shieldUntil){
+      burst(o.x,o.y,"#ffd34e");floatMessage("🛡️ سپر نجات داد!","#ffd34e");
+      beep("good");
+    }else{
+      lives--;burst(o.x,o.y,"#ff5364");beep("bad");canvasWrap.classList.remove("shake");void canvasWrap.offsetWidth;canvasWrap.classList.add("shake");floatMessage("-۱ جان ❤️","#ff5364");
+      if(lives<=0){endGame();return}
+    }
+  }else{
+    player.shieldUntil=performance.now()+2000;score+=20;burst(o.x,o.y,"#ffd34e");beep("good");floatMessage("⭐ سپر طلایی! +۲۰","#ffd34e");
+  }
+  updateLevel();
+  updateHUD();
+}
+
+/* سطح */
+function updateLevel(){
+  level=1+Math.floor(score/100);
+}
+
+/* HUD */
+function updateHUD(){
+  $("score").textContent=fa(score);
+  $("level").textContent=fa(level);
+  $("hearts").textContent="❤️".repeat(lives)+"🖤".repeat(CONFIG.maxLives-lives);
+  const p=score%100;
+  $("levelProgress").style.width=p+"%";
+  $("progressText").textContent=fa(p)+"٪";
+}
+
+/* حلقه بازی */
+function loop(now){
+  if(!running||paused||riddleOpen||gameOver)return;
+  const dt=Math.min((now-lastTime)/1000,.035);lastTime=now;
+  elapsed+=dt*1000;spawnTimer+=dt*1000;
+  update(dt);
+  draw();
+  if(elapsed>=nextRiddleTime || score>=nextRiddleScore){
+    openRiddle();
+    return;
+  }
+  requestAnimationFrame(loop);
+}
+
+/* به‌روزرسانی */
+function update(dt){
+  const speed=player.speed+level*22;
+  if(keys.left)player.x-=speed*dt;
+  if(keys.right)player.x+=speed*dt;
+  if(!keys.left&&!keys.right)player.x+=(player.targetX-player.x)*Math.min(1,dt*10);
+  player.x=Math.max(player.w/2,Math.min(W-player.w/2,player.x));
+
+  const spawnGap=Math.max(260,CONFIG.spawnEvery-level*32);
+  if(spawnTimer>=spawnGap){spawnTimer=0;spawnObject();if(Math.random()<.18+level*.015)spawnObject()}
+
+  for(let i=objects.length-1;i>=0;i--){
+    const o=objects[i];o.y+=o.speed*dt;o.angle+=o.spin*dt;
+    if(hit(player,o)){objects.splice(i,1);collect(o);continue}
+    if(o.y>H+70)objects.splice(i,1);
+  }
+
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;p.life-=dt;
+    if(p.life<=0)particles.splice(i,1);
+  }
+}
+
+/* رندر */
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawLabBackground();
+  drawObjects();
+  drawPlayer();
+  drawParticles();
+}
+
+/* پس‌زمینه آزمایشگاه */
+function drawLabBackground(){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0b1b33");g.addColorStop(1,"#061022");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // قفسه‌ها
+  ctx.fillStyle="#172c4b";
+  for(let y=80;y<330;y+=115){ctx.fillRect(0,y,W,8)}
+  // شیشه‌های رنگی
+  const jars=["#42e8ff","#55f5a5","#9b7bff","#ffd34e","#ff6b9d"];
+  for(let row=0;row<2;row++){
+    for(let i=0;i<12;i++){
+      const x=28+i*78+(row%2)*20,y=34+row*115;
+      ctx.save();ctx.globalAlpha=.45;ctx.fillStyle=jars[(i+row)%jars.length];
+      ctx.beginPath();ctx.roundRect(x,y,30,43,8);ctx.fill();
+      ctx.fillStyle="#d9f4ff";ctx.fillRect(x+6,y-6,18,8);ctx.restore();
+    }
+  }
+  // میز پایین
+  ctx.fillStyle="#0e2039";ctx.fillRect(0,H-42,W,42);
+  ctx.fillStyle="#203a5d";ctx.fillRect(0,H-42,W,5);
+  // حباب‌ها
+  for(let i=0;i<18;i++){
+    const x=(i*83+(elapsed*.025*(i%3+1)))%W,y=(i*47-(elapsed*.035*(i%2+1))+H)%H;
+    ctx.strokeStyle="rgba(66,232,255,.17)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,4+(i%4),0,Math.PI*2);ctx.stroke();
+  }
+}
+
+/* اشیاء */
+function drawObjects(){
+  for(const o of objects){
+    ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.angle);
+    if(o.kind==="golden"){
+      ctx.shadowColor="#ffd34e";ctx.shadowBlur=25;
+    }else if(o.kind==="danger"){
+      ctx.shadowColor="#ff5364";ctx.shadowBlur=10;
+    }
+    ctx.font=o.size+"px serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(o.type,0,0);
+    ctx.restore();
+  }
+}
+
+/* دانشمند + سبد */
+function drawPlayer(){
+  const x=player.x,y=player.y;
+  ctx.save();ctx.translate(x,y);
+  // سپر
+  if(performance.now()<player.shieldUntil){
+    ctx.strokeStyle="rgba(255,211,78,.9)";ctx.lineWidth=5;ctx.shadowColor="#ffd34e";ctx.shadowBlur=22;
+    ctx.beginPath();ctx.ellipse(0,-7,65,48,0,0,Math.PI*2);ctx.stroke();
+  }
+  // بدن سفید
+  ctx.fillStyle="#f7fbff";ctx.strokeStyle="#10213b";ctx.lineWidth=4;
+  ctx.beginPath();ctx.roundRect(-38,-18,76,62,20);ctx.fill();ctx.stroke();
+  // سر
+  ctx.fillStyle="#ffd2ad";ctx.beginPath();ctx.arc(0,-42,29,0,Math.PI*2);ctx.fill();ctx.stroke();
+  // مو
+  ctx.fillStyle="#3b2c28";for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(i*12,-66-Math.abs(i)*2,11,0,Math.PI*2);ctx.fill()}
+  // عینک
+  ctx.strokeStyle="#24324a";ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-23,-48,19,14,5);ctx.stroke();ctx.beginPath();ctx.roundRect(4,-48,19,14,5);ctx.stroke();ctx.beginPath();ctx.moveTo(-4,-41);ctx.lineTo(4,-41);ctx.stroke();
+  // دست‌ها
+  ctx.strokeStyle="#ffd2ad";ctx.lineWidth=12;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-31,2);ctx.lineTo(-53,17);ctx.moveTo(31,2);ctx.lineTo(53,17);ctx.stroke();
+  // سبد/بشر
+  ctx.fillStyle="#63e8ff";ctx.globalAlpha=.86;ctx.strokeStyle="#bff7ff";ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-55,13,110,37,10);ctx.fill();ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle="rgba(7,30,48,.55)";ctx.fillRect(-47,20,94,8);
+  ctx.restore();
+}
+
+/* ذرات */
+function drawParticles(){
+  for(const p of particles){
+    ctx.save();ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(p.x,p.y,2.5+4*(p.life/p.max),0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+}
+
+/* معما */
+function openRiddle(){
+  riddleOpen=true;clearInterval(riddleTimer);
+  riddleIndex=Math.floor(Math.random()*questions.length);
+  const q=questions[riddleIndex];
+  $("riddleQuestion").textContent=q.text;
+  $("riddleOptions").innerHTML="";
+  $("riddleExplain").className="riddle-explain";
+  $("riddleExplain").innerHTML="";
+  $("riddleNext").className="main-btn riddle-next";
+  ["الف","ب","ج","د"].forEach((letter,i)=>{
+    const b=document.createElement("button");b.className="riddle-option";b.innerHTML=`<b>${letter})</b> ${q.options[i]}`;
+    b.onclick=()=>answerRiddle(i);$("riddleOptions").appendChild(b);
+  });
+  riddleRemaining=CONFIG.riddleTime;updateRiddleTimer();
+  $("riddleOverlay").classList.remove("hidden");
+  riddleTimer=setInterval(()=>{
+    riddleRemaining-=.1;updateRiddleTimer();
+    if(riddleRemaining<=0){clearInterval(riddleTimer);riddleTimeout()}
+  },100);
+}
+function updateRiddleTimer(){
+  $("riddleTimer").textContent=fa(Math.max(0,Math.ceil(riddleRemaining)))+" ثانیه";
+  $("riddleTimebar").style.width=(riddleRemaining/CONFIG.riddleTime*100)+"%";
+}
+function answerRiddle(i){
+  clearInterval(riddleTimer);
+  const q=questions[riddleIndex],buttons=[...$("riddleOptions").children];
+  buttons.forEach(b=>b.disabled=true);
+  buttons[q.correctIndex].classList.add("correct");
+  if(i===q.correctIndex){
+    score+=50;riddleCorrect++;beep("riddleGood");floatMessage("+۵۰ 🧠","#55f5a5");
+    $("riddleExplain").innerHTML="✅ آفرین! "+q.explanation;
+  }else{
+    riddleWrong++;lives--;beep("riddleBad");canvasWrap.classList.add("shake");
+    $("riddleExplain").innerHTML=`❌ پاسخ درست: <b>${q.options[q.correctIndex]}</b><br>${q.explanation}`;
+    if(i>=0)buttons[i].classList.add("wrong");
+    if(lives<=0){$("riddleExplain").classList.add("show");updateHUD();setTimeout(endGame,500);return}
+  }
+  $("riddleExplain").classList.add("show");$("riddleNext").classList.add("show");updateHUD();
+}
+function riddleTimeout(){
+  riddleWrong++;lives--;beep("bad");
+  $("riddleExplain").innerHTML=`⏰ زمان تمام شد! پاسخ درست: <b>${questions[riddleIndex].options[questions[riddleIndex].correctIndex]}</b><br>${questions[riddleIndex].explanation}`;
+  $("riddleExplain").classList.add("show");
+  [...$("riddleOptions").children].forEach(b=>b.disabled=true);
+  $("riddleOptions").children[questions[riddleIndex].correctIndex].classList.add("correct");
+  if(lives<=0){updateHUD();setTimeout(endGame,500);return}
+  $("riddleNext").classList.add("show");updateHUD();
+}
+$("riddleNext").onclick=()=>{
+  $("riddleOverlay").classList.add("hidden");riddleOpen=false;
+  nextRiddleTime=elapsed+CONFIG.riddleEveryMs;nextRiddleScore=score+CONFIG.riddleEveryScore;
+  lastTime=performance.now();requestAnimationFrame(loop);
+};
+
+/* پایان */
+function endGame(){
+  if(gameOver)return;gameOver=true;running=false;clearInterval(riddleTimer);beep("end");
+  const oldBest=Number(localStorage.getItem("littleScientistBest")||0);
+  const best=Math.max(oldBest,score);localStorage.setItem("littleScientistBest",best);
+  $("finalScore").firstChild.textContent=fa(score);
+  $("finalLevel").textContent=fa(level);
+  $("riddleCorrect").textContent=fa(riddleCorrect);
+  $("riddleWrong").textContent=fa(riddleWrong);
+  $("bestScore").textContent=fa(best);
+  let msg,icon;
+  if(score>=400){msg="🏆 فوق‌العاده! تو با دانش و واکنش سریع، آزمایشگاه را نجات دادی!";icon="🏆"}
+  else if(score>=250){msg="🌟 عالی بود! یک دانشمند کوچک واقعی هستی. چند مأموریت دیگر و حرفه‌ای‌تر می‌شوی!";icon="🌟"}
+  else if(score>=120){msg="👏 آفرین! مأموریت با موفقیت انجام شد. نکته‌های معماها را مرور کن.";icon="👏"}
+  else{msg="💪 تلاش خوبی بود! دوباره شروع کن و با دقت بیشتر وسایل مفید را جمع کن.";icon="🔬"}
+  $("resultMessage").textContent=msg;$("resultIcon").textContent=icon;
+  $("pauseOverlay").classList.add("hidden");$("riddleOverlay").classList.add("hidden");
+  showScreen("resultScreen");
+}
+$("restartBtn").onclick=()=>{$("resultScreen").classList.remove("active");resetGame();showScreen("gameScreen");running=true;lastTime=performance.now();requestAnimationFrame(loop)};
+$("homeBtn").onclick=()=>{showScreen("startScreen")};
+
+/* مقداردهی اولیه */
+resizeCanvas();updateHUD();
+</script>
+</body>
+</html>
